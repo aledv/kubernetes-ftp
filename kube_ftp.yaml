@@ -1,18 +1,23 @@
 kind: Pod
 apiVersion: v1
 metadata:
-  name: task-pv-pod
+  name: task-ftp-pod
 spec:
   volumes:
     - name: task-pv-storage
       persistentVolumeClaim:
        claimName: task-pv-claim
   containers:
-    - name: task-pv-container
+    - name: task-ftp-container
       image: fauria/vsftpd
       ports:
         - containerPort: 21
           name: "ftp-server"
+      env:
+        - name: FTP_USER
+         value: "welld"    
+        - name: FTP_PASS
+         value: "Welld8377"           
       volumeMounts:
       - mountPath: "/home/vsftpd"
         name: task-pv-storage
