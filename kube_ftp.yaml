@@ -13,11 +13,6 @@ spec:
       ports:
         - containerPort: 21
           name: "ftp-server"
-      env:
-        - name: FTP_USER
-          value: "welld"    
-        - name: FTP_PASS
-          value: "welldtest" 
       volumeMounts:
       - mountPath: "/home/vsftpd"
         name: task-pv-storage
