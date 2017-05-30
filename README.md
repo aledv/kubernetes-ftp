@@ -1,7 +1,13 @@
-# github-demo
-Demo GitHub
+# kubernetes-ftp
+Demo Deploy FTP Service on Kubernetes
 
+kubectl create -f task-pv-volume.yaml
+kubectl get pv task-pv-volume
+
+kubectl create -f task-pv-claim.yaml
+kubectl get pvc task-pv-claim
 
 kubectl create -f ftp-deployment.yaml
 
-kubectl expose deployment my-ftp --name=my-ftp-service --port=21 --target-port=21 --type=NodePort
+kubectl create -f ftp-service.yaml
+
