@@ -1,23 +1,38 @@
-kind: Pod
-apiVersion: v1
+
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
 metadata:
-  name: task-ftp-pod
+  name: my-ftp
 spec:
-  volumes:
-    - name: task-pv-storage
-      persistentVolumeClaim:
-       claimName: task-pv-claim
-  containers:
-    - name: task-ftp-container
-      image: fauria/vsftpd
-      ports:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: my-ftp
+    spec:
+      volumes:
+      - name: task-pv-storage
+        persistentVolumeClaim:
+          claimName: task-pv-claim
+      containers:
+      - name: my-ftp-container
+        image: fauria/vsftpd
+        ports:
+        - containerPort: 20
+          name: "ftp-server-20"
         - containerPort: 21
-          name: "ftp-server"
-      env:
+          name: "ftp-server-21"
+        volumeMounts:
+        - mountPath: "/home/vsftpd"
+          name: task-pv-storage
+        env:
         - name: FTP_USER
-         value: "welld"    
+          value: "aledv"
         - name: FTP_PASS
-         value: "Welld8377"           
-      volumeMounts:
-      - mountPath: "/home/vsftpd"
-        name: task-pv-storage
+          value: "aledv1234"
+        - name: PASV_ADDRESS
+          value: "127.0.0.1"
+        - name: PASV_MIN_PORT
+          value: "21100"
+        - name: PASV_MAX_PORT
+          value: "21110"
