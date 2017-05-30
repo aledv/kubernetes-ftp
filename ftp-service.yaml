@@ -1,0 +1,14 @@
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: my-ftp
+  name: my-ftp-service
+  namespace: default
+spec:
+  ports:
+  - port: 21
+    targetPort: 21
+  selector:
+    app: my-ftp
