@@ -15,3 +15,4 @@ kubectl create -f ftp-deployment.yaml
 
 kubectl create -f ftp-service.yaml
 
+kubectl create -f ftp-ingress.yaml
