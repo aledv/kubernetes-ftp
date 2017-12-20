@@ -4,10 +4,10 @@ metadata:
   name: my-ftp-service
   labels:
     app: my-ftp
- spec:
-   type: NodePort
-   ports:
-     - port: 21
-       nodePort: 30080
-   selector:
-     app: my-ftp
+spec:
+  type: NodePort
+  ports:
+    - port: 21
+      nodePort: 30080
+  selector:
+    app: my-ftp
