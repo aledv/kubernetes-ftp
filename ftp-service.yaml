@@ -11,56 +11,59 @@ spec:
       port: 21
       targetPort: 21
       nodePort: 30080
-    # Passive-mode data channel ports. Kubernetes NodePort has no concept of
-    # a port range, so every port in PASV_MIN_PORT..PASV_MAX_PORT (set in
-    # ftp-deployment.yaml) must be listed explicitly here, or passive
-    # transfers on the un-listed ports will hang. Range kept small (11
-    # ports) on purpose: each extra port is one more Service port entry and
-    # one more NodePort the cluster has to allocate, and vsftpd only needs
-    # one free port per concurrent data connection.
-    - name: ftp-pasv-21100
-      port: 21100
-      targetPort: 21100
+    # Passive-mode data channel ports. These MUST be the same numbers as
+    # PASV_MIN_PORT/PASV_MAX_PORT in ftp-deployment.yaml AND as containerPort
+    # there, with port == targetPort == nodePort here. vsftpd announces the
+    # literal port number to the client in the PASV/EPSV response, and the
+    # client connects to that number directly - if nodePort differs from the
+    # announced port (e.g. NodePort remapped into the 30000-32767 range while
+    # vsftpd announces a different internal port), the client tries the wrong
+    # port and passive transfers fail with connection refused. Kubernetes
+    # NodePort also has no concept of a port *range*, so every port in the
+    # PASV range must be listed explicitly here.
+    - name: ftp-pasv-31100
+      port: 31100
+      targetPort: 31100
       nodePort: 31100
-    - name: ftp-pasv-21101
-      port: 21101
-      targetPort: 21101
+    - name: ftp-pasv-31101
+      port: 31101
+      targetPort: 31101
       nodePort: 31101
-    - name: ftp-pasv-21102
-      port: 21102
-      targetPort: 21102
+    - name: ftp-pasv-31102
+      port: 31102
+      targetPort: 31102
       nodePort: 31102
-    - name: ftp-pasv-21103
-      port: 21103
-      targetPort: 21103
+    - name: ftp-pasv-31103
+      port: 31103
+      targetPort: 31103
       nodePort: 31103
-    - name: ftp-pasv-21104
-      port: 21104
-      targetPort: 21104
+    - name: ftp-pasv-31104
+      port: 31104
+      targetPort: 31104
       nodePort: 31104
-    - name: ftp-pasv-21105
-      port: 21105
-      targetPort: 21105
+    - name: ftp-pasv-31105
+      port: 31105
+      targetPort: 31105
       nodePort: 31105
-    - name: ftp-pasv-21106
-      port: 21106
-      targetPort: 21106
+    - name: ftp-pasv-31106
+      port: 31106
+      targetPort: 31106
       nodePort: 31106
-    - name: ftp-pasv-21107
-      port: 21107
-      targetPort: 21107
+    - name: ftp-pasv-31107
+      port: 31107
+      targetPort: 31107
       nodePort: 31107
-    - name: ftp-pasv-21108
-      port: 21108
-      targetPort: 21108
+    - name: ftp-pasv-31108
+      port: 31108
+      targetPort: 31108
       nodePort: 31108
-    - name: ftp-pasv-21109
-      port: 21109
-      targetPort: 21109
+    - name: ftp-pasv-31109
+      port: 31109
+      targetPort: 31109
       nodePort: 31109
-    - name: ftp-pasv-21110
-      port: 21110
-      targetPort: 21110
+    - name: ftp-pasv-31110
+      port: 31110
+      targetPort: 31110
       nodePort: 31110
   selector:
     app: my-ftp

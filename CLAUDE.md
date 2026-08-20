@@ -37,11 +37,15 @@ Full cleanup: `kubectl delete -f ftp-service.yaml -f ftp-deployment.yaml -f task
 ## Architecture / resource relationships
 
 - **task-pv-volume.yaml** — a `PersistentVolume` (`task-pv-volume`) backed by
-  `hostPath: /tmp/data`, 10Gi capacity, `ReadWriteOnce`. Node-local by
-  construction: only correct on a single-node cluster (minikube/kind/Docker
-  Desktop/k3d).
+  `hostPath: /tmp/data`, 10Gi capacity, `ReadWriteOnce`, `storageClassName:
+  ""`. Node-local by construction: only correct on a single-node cluster
+  (minikube/kind/Docker Desktop/k3d). `storageClassName: ""` is required —
+  omitting it lets a cluster's default `StorageClass` (e.g. k3s's
+  `local-path`) hijack the claim below into dynamic provisioning instead of
+  binding here; verified live on k3s (Colima).
 - **task-pv-claim.yaml** — a `PersistentVolumeClaim` (`task-pv-claim`)
-  requesting 3Gi, `ReadWriteOnce`. Binds to the PV above.
+  requesting 3Gi, `ReadWriteOnce`, `storageClassName: ""`. Binds to the PV
+  above (immediately/statically — not through a StorageClass).
 - **ftp-deployment.yaml** — `Deployment` `my-ftp` (`apps/v1`), **1 replica**
   (kept at 1 deliberately — see hostPath note above; the PV isn't guaranteed
   to co-locate with the pod once there's more than one node) of the
@@ -49,14 +53,21 @@ Full cleanup: `kubectl delete -f ftp-service.yaml -f ftp-deployment.yaml -f task
   chroot/home directory). Sets `FTP_USER`/`FTP_PASS` as literal demo
   credentials (`user`/`pass1234` — not meant to be reused; a real deployment
   should source them from a `Secret` via `secretKeyRef`) and
-  `PASV_ADDRESS`/`PASV_MIN_PORT`/`PASV_MAX_PORT` (`21100`-`21110`) for
+  `PASV_ADDRESS`/`PASV_MIN_PORT`/`PASV_MAX_PORT` (`31100`-`31110`) for
   passive-mode FTP, which most clients require.
 - **ftp-service.yaml** — `NodePort` Service `my-ftp-service` selecting
   `app: my-ftp`. Exposes port 21 (`nodePort: 30080`) plus one explicit
-  Service port entry per passive-mode port `21100`-`21110`
-  (`nodePort: 31100`-`31110`) — NodePort has no "range" concept, so the
-  passive port range on the Deployment and the individual ports listed here
-  must be kept in sync by hand.
+  Service port entry per passive-mode port, `31100`-`31110`, with
+  `port`/`targetPort`/`nodePort` all set to the *same* number per entry —
+  NodePort has no "range" concept, so each port has to be listed explicitly.
+  Critically, these numbers must also match `PASV_MIN_PORT`/`PASV_MAX_PORT`
+  and `containerPort` in the Deployment exactly: vsftpd announces the port
+  number literally in its PASV/EPSV response and the client connects to
+  that number directly, with no translation — if the announced port isn't
+  the same number as the externally-reachable NodePort, passive transfers
+  fail with connection refused (this was the state before `31100`-`31110`
+  replaced `21100`-`21110` everywhere; confirmed broken, then confirmed
+  fixed, on a live k3s cluster).
 - **ftp-ingress.yaml** — Ingress `ftp-http-ingress` (`networking.k8s.io/v1`),
   default backend `my-ftp-service:21`. **Does not actually work**: a
   Kubernetes `Ingress` is an HTTP(S) L7 router and cannot proxy the raw TCP

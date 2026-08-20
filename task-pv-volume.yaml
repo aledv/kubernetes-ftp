@@ -12,5 +12,11 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  # Empty string, not omitted: forces static binding to this PV instead of
+  # matching whatever StorageClass a cluster sets as default (e.g. k3s ships
+  # "local-path" as default, which would otherwise dynamically provision a
+  # separate volume for the claim and leave this PV unused - see
+  # task-pv-claim.yaml).
+  storageClassName: ""
   hostPath:
     path: "/tmp/data"

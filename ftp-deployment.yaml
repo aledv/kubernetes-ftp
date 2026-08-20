@@ -30,10 +30,10 @@ spec:
         - containerPort: 21
           protocol: TCP
           name: "ftp-server"
-        - containerPort: 21100
+        - containerPort: 31100
           protocol: TCP
           name: "ftp-pasv-min"
-        - containerPort: 21110
+        - containerPort: 31110
           protocol: TCP
           name: "ftp-pasv-max"
         volumeMounts:
@@ -54,11 +54,15 @@ spec:
         # mode needs the client to accept an inbound connection from the
         # server, which is normally blocked by NAT/firewalls. PASV_ADDRESS
         # must be the externally reachable address of the node (e.g. its
-        # public/LAN IP), and PASV_MIN_PORT/PASV_MAX_PORT must match the
-        # range exposed by ftp-service.yaml.
+        # public/LAN IP). PASV_MIN_PORT/PASV_MAX_PORT are the port numbers
+        # vsftpd literally announces to the client in the PASV/EPSV response
+        # - they must be numerically identical to the containerPort values
+        # above and to the port/targetPort/nodePort values in
+        # ftp-service.yaml, or the client will try to connect to a port
+        # that isn't the one actually reachable from outside the cluster.
         - name: PASV_ADDRESS
           value: "127.0.0.1" # replace with your node's reachable IP
         - name: PASV_MIN_PORT
-          value: "21100"
+          value: "31100"
         - name: PASV_MAX_PORT
-          value: "21110"
+          value: "31110"

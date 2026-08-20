@@ -15,7 +15,7 @@ anything real.
 | `task-pv-volume.yaml` | `PersistentVolume` | 10Gi volume backed by `hostPath: /tmp/data` on the node. |
 | `task-pv-claim.yaml` | `PersistentVolumeClaim` | Claims 3Gi from the volume above, `ReadWriteOnce`. |
 | `ftp-deployment.yaml` | `Deployment` | Runs the `fauria/vsftpd` container, mounts the claim at `/home/vsftpd` as the FTP home/chroot directory. |
-| `ftp-service.yaml` | `Service` (`NodePort`) | Exposes the FTP control port (21) and the passive-mode data port range (21100-21110) outside the cluster. |
+| `ftp-service.yaml` | `Service` (`NodePort`) | Exposes the FTP control port (21) and the passive-mode data port range (31100-31110) outside the cluster. |
 | `ftp-ingress.yaml` | `Ingress` | Present for completeness, but **does not work for FTP** - see [Known limitations](#known-limitations). |
 
 ## Prerequisites
@@ -80,14 +80,25 @@ NAT/firewalls). This is why `ftp-deployment.yaml` sets:
   `127.0.0.1` only works if the FTP client runs on the same machine as the
   cluster node.
 - `PASV_MIN_PORT` / `PASV_MAX_PORT` - the port range vsftpd will use for
-  data connections (`21100`-`21110`).
+  data connections (`31100`-`31110`).
 
-This range must match the ports opened in `ftp-service.yaml`. Kubernetes
-`NodePort` has no concept of a port *range* - each port has to be listed
-explicitly as its own Service port entry, which is why the Service lists 11
-separate `ftp-pasv-*` ports. If you widen the PASV range in the Deployment,
-widen the Service accordingly, or passive transfers on the extra ports will
-hang.
+vsftpd announces these port numbers *literally* to the client in its
+PASV/EPSV response, and the client connects to that exact number - there is
+no translation. That's why this range is `31100`-`31110` and not, say,
+`21100`-`21110`: Kubernetes `NodePort` only allows ports in `30000`-`32767`
+by default, so the externally-reachable port and the port vsftpd announces
+have to be the same numbers from the start, or clients will try to connect
+to a port that was never opened externally and passive transfers will fail
+with "connection refused" (this was verified against a live cluster - it's
+not a hypothetical). Consequently `containerPort` in `ftp-deployment.yaml`
+and `port`/`targetPort`/`nodePort` in `ftp-service.yaml` must all use these
+same numbers too. Kubernetes `NodePort` has no concept of a port *range*
+either - each port has to be listed explicitly as its own Service port
+entry, which is why the Service lists 11 separate `ftp-pasv-*` ports. If you
+widen the PASV range, widen the Deployment's `containerPort`s and the
+Service's ports accordingly (keeping all four - PASV env var, containerPort,
+targetPort, nodePort - numerically identical), or passive transfers on the
+extra ports will hang.
 
 ## Connecting to the FTP server
 
@@ -127,6 +138,15 @@ out here rather than hidden:
   controller-specific TCP passthrough configuration (e.g. ingress-nginx's
   `tcp-services` ConfigMap), which is unrelated to the `Ingress` resource
   type.
+- **Static PV binding depends on `storageClassName: ""`.** Both
+  `task-pv-volume.yaml` and `task-pv-claim.yaml` set `storageClassName: ""`
+  on purpose. Without it, a cluster with a default `StorageClass` (e.g. k3s
+  ships `local-path` as default) auto-assigns that class to the claim, which
+  then dynamically provisions its *own* volume instead of binding to the
+  hand-created `task-pv-volume` - the pod still works, but silently ends up
+  using different storage than this repo documents, and `task-pv-volume`
+  sits unused. Verified live: removing `storageClassName: ""` reproduces
+  this.
 - **Demo credentials.** See [Credentials](#credentials) above.
 - **Plain FTP, not FTPS.** Traffic (including the login) is unencrypted.
   `fauria/vsftpd` supports TLS via additional environment variables if
