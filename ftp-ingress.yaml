@@ -1,8 +1,20 @@
-apiVersion: extensions/v1beta1
+# WARNING: kept mainly to fix the original API/naming bugs, not as a
+# recommendation to use it. A standard Kubernetes Ingress is an HTTP(S) L7
+# router: it terminates and parses HTTP requests and cannot proxy a raw TCP
+# protocol like FTP (control connection + dynamic passive-mode data
+# connections). No stock ingress controller will make this work as a plain
+# Ingress resource. If you need external FTP access, use the NodePort (or a
+# LoadBalancer) Service in ftp-service.yaml directly - see README.md. The
+# only way to route FTP through an ingress controller is controller-specific
+# TCP passthrough config (e.g. ingress-nginx's `tcp-services` ConfigMap),
+# which is a different mechanism than the Ingress object below.
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ftp-http-ingress
 spec:
-  backend:
-    serviceName: ftp-http-service
-    servicePort: 21
+  defaultBackend:
+    service:
+      name: my-ftp-service # fixed: previously pointed at a non-existent "ftp-http-service"
+      port:
+        number: 21

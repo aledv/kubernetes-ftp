@@ -1,3 +1,6 @@
+# hostPath ties this volume to a single node's local disk - fine for a
+# single-node demo cluster (minikube/kind/Docker Desktop), not suitable for
+# a real multi-node cluster (see ftp-deployment.yaml replicas note).
 kind: PersistentVolume
 apiVersion: v1
 metadata:

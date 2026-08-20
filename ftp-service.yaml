@@ -7,7 +7,60 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 21
+    - name: ftp-control
+      port: 21
+      targetPort: 21
       nodePort: 30080
+    # Passive-mode data channel ports. Kubernetes NodePort has no concept of
+    # a port range, so every port in PASV_MIN_PORT..PASV_MAX_PORT (set in
+    # ftp-deployment.yaml) must be listed explicitly here, or passive
+    # transfers on the un-listed ports will hang. Range kept small (11
+    # ports) on purpose: each extra port is one more Service port entry and
+    # one more NodePort the cluster has to allocate, and vsftpd only needs
+    # one free port per concurrent data connection.
+    - name: ftp-pasv-21100
+      port: 21100
+      targetPort: 21100
+      nodePort: 31100
+    - name: ftp-pasv-21101
+      port: 21101
+      targetPort: 21101
+      nodePort: 31101
+    - name: ftp-pasv-21102
+      port: 21102
+      targetPort: 21102
+      nodePort: 31102
+    - name: ftp-pasv-21103
+      port: 21103
+      targetPort: 21103
+      nodePort: 31103
+    - name: ftp-pasv-21104
+      port: 21104
+      targetPort: 21104
+      nodePort: 31104
+    - name: ftp-pasv-21105
+      port: 21105
+      targetPort: 21105
+      nodePort: 31105
+    - name: ftp-pasv-21106
+      port: 21106
+      targetPort: 21106
+      nodePort: 31106
+    - name: ftp-pasv-21107
+      port: 21107
+      targetPort: 21107
+      nodePort: 31107
+    - name: ftp-pasv-21108
+      port: 21108
+      targetPort: 21108
+      nodePort: 31108
+    - name: ftp-pasv-21109
+      port: 21109
+      targetPort: 21109
+      nodePort: 31109
+    - name: ftp-pasv-21110
+      port: 21110
+      targetPort: 21110
+      nodePort: 31110
   selector:
     app: my-ftp

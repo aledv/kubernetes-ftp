@@ -1,10 +1,19 @@
-
-apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-ftp
 spec:
-  replicas: 3
+  # NOTE: task-pv-volume.yaml uses a hostPath PersistentVolume, which is tied
+  # to a single node's local disk. Running more than 1 replica only works
+  # reliably on a single-node cluster (minikube/kind/Docker Desktop) where
+  # every pod lands on the same node. On a multi-node cluster, replicas
+  # scheduled on a different node than the one holding the data will see an
+  # empty/different directory. Keep replicas at 1 unless you replace the
+  # storage with a ReadWriteMany-capable volume (e.g. NFS).
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-ftp
   template:
     metadata:
       labels:
@@ -21,17 +30,35 @@ spec:
         - containerPort: 21
           protocol: TCP
           name: "ftp-server"
+        - containerPort: 21100
+          protocol: TCP
+          name: "ftp-pasv-min"
+        - containerPort: 21110
+          protocol: TCP
+          name: "ftp-pasv-max"
         volumeMounts:
         - mountPath: "/home/vsftpd"
           name: task-pv-storage
         env:
+        # Demo credentials only. Do not reuse these values, and do not run
+        # this in production without moving them into a Kubernetes Secret
+        # (kubectl create secret generic ftp-credentials
+        #  --from-literal=FTP_USER=... --from-literal=FTP_PASS=...) and
+        # referencing them with valueFrom.secretKeyRef instead of a literal
+        # value.
         - name: FTP_USER
           value: "user"
         - name: FTP_PASS
           value: "pass1234"
-        #- name: PASV_ADDRESS
-        #  value: "127.0.0.1"
-        #- name: PASV_MIN_PORT
-        #  value: "21100"
-        #- name: PASV_MAX_PORT
-        #  value: "21110"
+        # Passive mode is required for most modern FTP clients, since active
+        # mode needs the client to accept an inbound connection from the
+        # server, which is normally blocked by NAT/firewalls. PASV_ADDRESS
+        # must be the externally reachable address of the node (e.g. its
+        # public/LAN IP), and PASV_MIN_PORT/PASV_MAX_PORT must match the
+        # range exposed by ftp-service.yaml.
+        - name: PASV_ADDRESS
+          value: "127.0.0.1" # replace with your node's reachable IP
+        - name: PASV_MIN_PORT
+          value: "21100"
+        - name: PASV_MAX_PORT
+          value: "21110"
