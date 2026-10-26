@@ -23,13 +23,13 @@ kubectl get pvc task-pv-claim
 
 kubectl create -f ftp-deployment.yaml
 kubectl create -f ftp-service.yaml
-kubectl create -f ftp-ingress.yaml
 ```
 
-To validate a manifest without applying changes: `kubectl apply --dry-run=client -f <file>.yaml`
-(requires a reachable cluster context — `kubectl` needs API discovery even
-in dry-run/client mode, it cannot validate fully offline). For a pure YAML
-syntax check with no cluster available, e.g. `ruby -ryaml -e "YAML.load_stream(File.read('<file>.yaml'))"`.
+(`ftp-ingress.yaml` is deliberately left out: it cannot proxy FTP, see below.)
+
+Validation without a cluster (same as CI): `yamllint .` and
+`kubeconform -strict -summary *.yaml` (Kubernetes schema check, no cluster needed).
+With a cluster: `kubectl apply --dry-run=server -f <file>.yaml`.
 
 Full cleanup: `kubectl delete -f ftp-service.yaml -f ftp-deployment.yaml -f task-pv-claim.yaml -f task-pv-volume.yaml`
 (add `-f ftp-ingress.yaml` if it was created).

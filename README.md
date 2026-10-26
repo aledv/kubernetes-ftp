@@ -164,6 +164,21 @@ kubectl delete -f task-pv-volume.yaml
 
 (and `kubectl delete -f ftp-ingress.yaml` if you created it.)
 
+## Validation
+
+CI runs [yamllint](https://github.com/adrienverge/yamllint) and
+[kubeconform](https://github.com/yannh/kubeconform) (schema check against the
+Kubernetes API, no cluster needed) on every push. Locally:
+
+```sh
+yamllint .
+kubeconform -strict -summary *.yaml
+```
+
 ## Reference
 
 - Docker image used: [fauria/vsftpd](https://github.com/fauria/docker-vsftpd)
+
+## License
+
+MIT, see [LICENSE](LICENSE).

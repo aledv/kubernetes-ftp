@@ -1,0 +1,23 @@
+name: validate
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: pip install yamllint==1.37.1
+      - run: yamllint .
+      - name: kubeconform
+        env:
+          URL: https://github.com/yannh/kubeconform/releases/download/v0.7.0/kubeconform-linux-amd64.tar.gz
+        run: |
+          curl -sSL "$URL" | tar xz kubeconform
+          ./kubeconform -strict -summary *.yaml

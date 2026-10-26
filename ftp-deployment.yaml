@@ -25,17 +25,45 @@ spec:
           claimName: task-pv-claim
       containers:
       - name: my-ftp-container
-        image: fauria/vsftpd
+        # Pinned by digest (the image only publishes :latest, last updated 2023-01)
+        image: fauria/vsftpd:latest@sha256:6d71d7c7f1b0ab2844ec7dc7999a30aef6d758b6d8179cf5967513f87c79c177
         ports:
         - containerPort: 21
           protocol: TCP
-          name: "ftp-server"
+          name: ftp-control
         - containerPort: 31100
           protocol: TCP
-          name: "ftp-pasv-min"
+          name: pasv-31100
+        - containerPort: 31101
+          protocol: TCP
+          name: pasv-31101
+        - containerPort: 31102
+          protocol: TCP
+          name: pasv-31102
+        - containerPort: 31103
+          protocol: TCP
+          name: pasv-31103
+        - containerPort: 31104
+          protocol: TCP
+          name: pasv-31104
+        - containerPort: 31105
+          protocol: TCP
+          name: pasv-31105
+        - containerPort: 31106
+          protocol: TCP
+          name: pasv-31106
+        - containerPort: 31107
+          protocol: TCP
+          name: pasv-31107
+        - containerPort: 31108
+          protocol: TCP
+          name: pasv-31108
+        - containerPort: 31109
+          protocol: TCP
+          name: pasv-31109
         - containerPort: 31110
           protocol: TCP
-          name: "ftp-pasv-max"
+          name: pasv-31110
         volumeMounts:
         - mountPath: "/home/vsftpd"
           name: task-pv-storage
