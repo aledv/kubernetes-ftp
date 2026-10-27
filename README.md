@@ -1,5 +1,7 @@
 # kubernetes-ftp
 
+[![CI](https://github.com/aledv/kubernetes-ftp/actions/workflows/validate.yml/badge.svg)](https://github.com/aledv/kubernetes-ftp/actions/workflows/validate.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A minimal example of deploying an FTP server on Kubernetes, using the
 [fauria/vsftpd](https://github.com/fauria/docker-vsftpd) Docker image.
 
@@ -7,6 +9,20 @@ This is a learning/demo project, intended to run on a **single-node**
 cluster (minikube, kind, Docker Desktop, k3d, ...). See
 [Known limitations](#known-limitations) before using it as a base for
 anything real.
+
+## Contents
+
+- [What's in this repo](#whats-in-this-repo)
+- [Prerequisites](#prerequisites)
+- [Deploying](#deploying)
+- [Configuration](#configuration)
+- [Connecting to the FTP server](#connecting-to-the-ftp-server)
+- [Known limitations](#known-limitations)
+- [Cleanup](#cleanup)
+- [Validation](#validation)
+- [Reference](#reference)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## What's in this repo
 
@@ -178,6 +194,10 @@ kubeconform -strict -summary *.yaml
 ## Reference
 
 - Docker image used: [fauria/vsftpd](https://github.com/fauria/docker-vsftpd)
+
+## Contributing
+
+Issues and pull requests are welcome. Please run the linters and tests before opening a pull request.
 
 ## License
 
